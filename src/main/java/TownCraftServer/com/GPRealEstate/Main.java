@@ -9,21 +9,21 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
 public class Main extends JavaPlugin {
 
-    DataStore dataStore;
-    Logger log;
-
     // Dependencies Variables
     public static boolean vaultPresent = false;
     public static Economy econ = null;
     public static Permission perms = null;
+    DataStore dataStore;
+    Logger log;
 
-    public void onEnable(){
+    public void onEnable() {
 
         this.log = getLogger();
         dataStore = new DataStore(this);
@@ -58,25 +58,25 @@ public class Main extends JavaPlugin {
 
     }
 
-    private boolean checkVault(){
+    private boolean checkVault() {
         vaultPresent = getServer().getPluginManager().getPlugin("Vault") != null;
         return vaultPresent;
     }
 
-    private boolean setupEconomy(){
+    private boolean setupEconomy() {
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp == null) return false;
-        econ = (Economy)rsp.getProvider();
+        econ = (Economy) rsp.getProvider();
         return econ != null;
     }
 
-    private boolean setupPermissions(){
+    private boolean setupPermissions() {
         RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
-        perms = (Permission)rsp.getProvider();
+        perms = (Permission) rsp.getProvider();
         return perms != null;
     }
 
-    public void loadConfig(boolean reload){
+    public void loadConfig(boolean reload) {
 
         FileConfiguration config = YamlConfiguration.loadConfiguration(new File(dataStore.configFilePath));
         FileConfiguration outConfig = new YamlConfiguration();
@@ -93,7 +93,7 @@ public class Main extends JavaPlugin {
         dataStore.cfgAllowSellingParentAC = config.getBoolean("GPRealEstate.Rules.AllowSellingParentAC", false);
         dataStore.cfgIgnoreClaimSize = config.getBoolean("GPRealEstate.Rules.IgnoreSizeLimit", false);
 
-        if(!reload) {
+        if (!reload) {
             // Letting the console know the "Keywords"
             this.log.info("Signs will be using the keywords \"" + dataStore.cfgSignShort + "\" or \"" + dataStore.cfgSignLong + "\"");
         }
@@ -109,57 +109,46 @@ public class Main extends JavaPlugin {
 
         try {
             outConfig.save(dataStore.configFilePath);
-        }
-        catch(IOException exception){
+        } catch (IOException exception) {
             this.log.info("Unable to write to the configuration file at \"" + dataStore.configFilePath + "\"");
         }
-
     }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-
-        if(command.getName().equalsIgnoreCase("gpre") && sender.hasPermission("gprealestate.command")){
-
-            if(args.length == 0){
-                sender.sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&', "&8&m======== &6GP Real Estate &8&m========"));
-                sender.sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&', "                &4Arguments:"));
-                sender.sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&', "&6- &2Version | Gets the plugins version."));
-                sender.sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&', "&6- &2Reload  | Reloads the config file."));
-                sender.sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&', "&6- &2Help    | Shows this message."));
-                sender.sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&', "&8&m========= &6Permissions &8&m========="));
-                //TODO
+        if (command.getName().equalsIgnoreCase("gpre") && sender.hasPermission("gprealestate.command")) {
+            if (args.length == 0) {
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&8&m======== &6GP Real Estate &8&m========"));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "                &4Arguments:"));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&6- &2Version | Gets the plugins version."));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&6- &2Reload  | Reloads the config file."));
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&6- &2Help    | Shows this message."));
                 return true;
-            }
-            else if(args.length == 1){
+            } else if (args.length == 1) {
 
-                if(args[0].equalsIgnoreCase("version") && sender.hasPermission("gprealestate.admin")){
+                if (args[0].equalsIgnoreCase("version") && sender.hasPermission("gprealestate.admin")) {
                     sender.sendMessage(dataStore.chatPrefix + ChatColor.GREEN + "You are running " + ChatColor.RED + dataStore.pdf.getName() + ChatColor.GREEN + " version " + ChatColor.RED + dataStore.pdf.getVersion());
                     return true;
-                }
-                else if(args[0].equalsIgnoreCase("reload") && sender.hasPermission("gprealestate.admin")){
+                } else if (args[0].equalsIgnoreCase("reload") && sender.hasPermission("gprealestate.admin")) {
                     loadConfig(true);
                     sender.sendMessage(dataStore.chatPrefix + ChatColor.GREEN + "The config file was succesfully reloaded.");
                     return true;
-                }
-                else if(args[0].equalsIgnoreCase("help")){
-                    sender.sendMessage(dataStore.chatPrefix + ChatColor.GREEN + "Commands: -Permission");
-                    sender.sendMessage(dataStore.chatPrefix + ChatColor.GREEN + "gpre version | -gprealestate.admin");
-                    sender.sendMessage(dataStore.chatPrefix + ChatColor.GREEN + "gpre reload: | -gprealestate.admin");
+                } else if (args[0].equalsIgnoreCase("help")) {
+                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&8&m======== &6GP Real Estate &8&m========"));
+                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "                &4Arguments:"));
+                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&6- &2Version | Gets the plugins version."));
+                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&6- &2Reload  | Reloads the config file."));
+                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&6- &2Help    | Shows this message."));
                     return true;
-                }
-                else {
+                } else {
                     sender.sendMessage(dataStore.chatPrefix + ChatColor.GREEN + "Unknown. Use 'gpre help' for info");
                     return true;
                 }
 
             }
-        }
-        else {
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&8[&6Server&8] &4You do not have permission for this!"));
+        } else {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', dataStore.chatPrefix + "&4You do not have permission for this!"));
             return false;
         }
-
         return false;
-
     }
 }
