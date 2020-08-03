@@ -1,0 +1,16 @@
+GPRealEstate:
+  Keywords:
+    Signs:
+      Short: '[RE]'
+      Long: '[RealEstate]'
+    Actions:
+      Selling: 'Sell;Selling;For Sale'
+      ReplaceSell: 'FOR SALE'
+      #This option is how much each block will cost if the price is left blank. Say you have a 10x10 claim. That is 100 blocks, so it will be multiplied by this number, and that will be the price.
+      BlockPrice: '5'
+
+      #IgnoreClaimLimit: - If true the plugin will sell someone the claim even if they exceed their claim limit set by Grief Prevention.
+      #AllowSellingParentAC: - If true the plugin will allow you to sell parent adminclaims. Reccomended you leave this false. It allows users with gprealestate.admin to sell adminclaims!
+  Rules:
+    IgnoreClaimLimit: false
+    AllowSellingParentAC: false
