@@ -1,3 +1,4 @@
 TownCraftServer\com\GPRealEstate\GPListener.class
 TownCraftServer\com\GPRealEstate\DataStore.class
+TownCraftServer\com\GPRealEstate\MySQL.class
 TownCraftServer\com\GPRealEstate\Main.class

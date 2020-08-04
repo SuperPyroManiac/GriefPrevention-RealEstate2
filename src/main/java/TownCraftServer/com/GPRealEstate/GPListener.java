@@ -219,7 +219,7 @@ public class GPListener implements Listener {
                     || (type == Material.OAK_SIGN) || (type == Material.OAK_WALL_SIGN) || (type == Material.WARPED_SIGN)
                     || (type == Material.WARPED_WALL_SIGN)) {
                 Sign sign = (Sign) event.getClickedBlock().getState();
-                if ((sign.getLine(0).equalsIgnoreCase(plugin.dataStore.cfgSignShort)) || (sign.getLine(0).equalsIgnoreCase(plugin.dataStore.cfgSignLong))) {
+                if ((sign.getLine(0).equalsIgnoreCase(ChatColor.BLUE + plugin.dataStore.cfgSignShort)) || (sign.getLine(0).equalsIgnoreCase(ChatColor.BLUE + plugin.dataStore.cfgSignLong))) {
                     Player player = event.getPlayer();
                     Location location = event.getClickedBlock().getLocation();
                     GriefPrevention gp = GriefPrevention.instance;

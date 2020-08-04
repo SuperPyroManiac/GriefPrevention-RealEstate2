@@ -2,8 +2,10 @@ package TownCraftServer.com.GPRealEstate;
 
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.plugin.PluginDescriptionFile;
-
 import java.io.File;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,6 +24,14 @@ public class DataStore {
     public int cfgReplaceValue;
     public boolean cfgIgnoreClaimSize;
     public boolean cfgAllowSellingParentAC;
+    //MySQL Access
+    public String cfgHost;
+    public String cfgPort;
+    public String cfgDatabase;
+    public String cfgUsername;
+    public String cfgPassword;
+    public String cfgSSL;
+    public Connection connection;
     Main plugin;
 
     public DataStore(Main plugin) {
@@ -45,5 +55,29 @@ public class DataStore {
             string += str.toString();
         }
         return string;
+    }
+
+    public Boolean isConnected(){
+        return(connection == null ? false : true);
+    }
+
+    public void connect() throws ClassNotFoundException, SQLException {
+        if (!isConnected()){
+            connection = DriverManager.getConnection("jdbc:mysql://" + cfgHost + ":" + cfgPort + "/" + cfgDatabase + "?useSSL=" + cfgSSL, cfgUsername, cfgPassword);
+        }
+    }
+
+    public void disconnect(){
+        if (isConnected()){
+            try{
+                connection.close();
+            } catch(SQLException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public Connection getConnection(){
+        return connection;
     }
 }

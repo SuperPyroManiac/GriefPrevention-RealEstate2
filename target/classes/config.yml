@@ -14,3 +14,13 @@ GPRealEstate:
   Rules:
     IgnoreClaimLimit: false
     AllowSellingParentAC: false
+
+      #MySQL Information - This is required as it enables UUID's to be tracked and handles the date/time for renting.
+  MySQL:
+    host: 'localhost'
+    port: '3306'
+    database: 'minecraft'
+    username: 'root'
+    password: ''
+    #SSL: If you don't know what this is, chances are you leave it false!
+    useSSL: 'false'

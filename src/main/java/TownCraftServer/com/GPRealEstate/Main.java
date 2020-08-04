@@ -3,15 +3,16 @@ package TownCraftServer.com.GPRealEstate;
 import net.md_5.bungee.api.ChatColor;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.logging.Logger;
 
 public class Main extends JavaPlugin {
@@ -21,13 +22,13 @@ public class Main extends JavaPlugin {
     public static Economy econ = null;
     public static Permission perms = null;
     DataStore dataStore;
+    MySQL mySQL;
     Logger log;
 
     public void onEnable() {
-
         this.log = getLogger();
         dataStore = new DataStore(this);
-
+        mySQL = new MySQL(this);
         new GPListener(this).registerEvents();
 
         if (checkVault()) {
@@ -53,9 +54,24 @@ public class Main extends JavaPlugin {
             }
 
         }
-
         loadConfig(false);
 
+        try {
+            dataStore.connect();
+        } catch (ClassNotFoundException | SQLException e) {
+            Bukkit.getLogger().warning("Issue connecting to MySQL!");
+            Bukkit.getLogger().info("Could not connect to MySQL. Plugin disabled!");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        if (dataStore.isConnected()) Bukkit.getLogger().info("MySQL Connected!");
+        mySQL.createTable();
+        mySQL.registerEvents();
+    }
+
+    @Override
+    public void onDisable() {
+        dataStore.disconnect();
     }
 
     private boolean checkVault() {
@@ -93,6 +109,13 @@ public class Main extends JavaPlugin {
         dataStore.cfgAllowSellingParentAC = config.getBoolean("GPRealEstate.Rules.AllowSellingParentAC", false);
         dataStore.cfgIgnoreClaimSize = config.getBoolean("GPRealEstate.Rules.IgnoreSizeLimit", false);
 
+        dataStore.cfgHost = config.getString("GPRealEstate.MySQL.host", "localhost");
+        dataStore.cfgPort = config.getString("GPRealEstate.MySQL.port", "3306");
+        dataStore.cfgDatabase = config.getString("GPRealEstate.MySQL.database", "minecraft");
+        dataStore.cfgUsername = config.getString("GPRealEstate.MySQL.username", "root");
+        dataStore.cfgPassword = config.getString("GPRealEstate.MySQL.password", "");
+        dataStore.cfgSSL = config.getString("GPRealEstate.MySQL.useSSL", "false");
+
         if (!reload) {
             // Letting the console know the "Keywords"
             this.log.info("Signs will be using the keywords \"" + dataStore.cfgSignShort + "\" or \"" + dataStore.cfgSignLong + "\"");
@@ -106,6 +129,12 @@ public class Main extends JavaPlugin {
         outConfig.set("GPRealEstate.Keywords.Actions.BuyPrice", dataStore.cfgReplaceValue);
         outConfig.set("GPRealEstate.Rules.IgnoreSizeLimit", dataStore.cfgIgnoreClaimSize);
         outConfig.set("GPRealEstate.Rules.AllowSellingParentAC", dataStore.cfgAllowSellingParentAC);
+        outConfig.set("GPRealEstate.MySQL.host", dataStore.cfgHost);
+        outConfig.set("GPRealEstate.MySQL.port", dataStore.cfgPort);
+        outConfig.set("GPRealEstate.MySQL.database", dataStore.cfgDatabase);
+        outConfig.set("GPRealEstate.MySQL.username", dataStore.cfgUsername);
+        outConfig.set("GPRealEstate.MySQL.password", dataStore.cfgPassword);
+        outConfig.set("GPRealEstate.MySQL.useSSL", dataStore.cfgSSL);
 
         try {
             outConfig.save(dataStore.configFilePath);
