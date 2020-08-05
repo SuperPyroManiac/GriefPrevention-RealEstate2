@@ -131,6 +131,7 @@ public class GPListener implements Listener {
                     event.setLine(1, ChatColor.DARK_GREEN + plugin.dataStore.cfgReplaceSell);
                     event.setLine(2, player.getName());
                     event.setLine(3, price + " " + Main.econ.currencyNamePlural());
+                    plugin.mySQL.createClaim(event.getBlock().getLocation(), event.getPlayer().getUniqueId());
                     player.sendMessage(plugin.dataStore.chatPrefix + ChatColor.BLUE + "You are now selling this claim for " + ChatColor.GREEN + price + " " + Main.econ.currencyNamePlural());
                     addLogEntry(
                             "[" + this.dateFormat.format(this.date) + "] " + player.getName() + " has made a claim for sale at ["
@@ -147,6 +148,7 @@ public class GPListener implements Listener {
                             event.setLine(1, ChatColor.DARK_GREEN + plugin.dataStore.cfgReplaceSell);
                             event.setLine(2, player.getName());
                             event.setLine(3, price + " " + Main.econ.currencyNamePlural());
+                            plugin.mySQL.createClaim(event.getBlock().getLocation(), event.getPlayer().getUniqueId());
                             player.sendMessage(plugin.dataStore.chatPrefix + ChatColor.BLUE + "You are now selling this admin claim for " + ChatColor.GREEN + price + " " + Main.econ.currencyNamePlural());
                             addLogEntry(
                                     "[" + this.dateFormat.format(this.date) + "] " + player.getName() + " has made an admin claim for sale at "
@@ -173,6 +175,7 @@ public class GPListener implements Listener {
                     event.setLine(1, ChatColor.DARK_GREEN + plugin.dataStore.cfgReplaceSell);
                     event.setLine(2, player.getName());
                     event.setLine(3, price + " " + Main.econ.currencyNamePlural());
+                    plugin.mySQL.createClaim(event.getBlock().getLocation(), event.getPlayer().getUniqueId());
                     player.sendMessage(plugin.dataStore.chatPrefix + ChatColor.BLUE + "You are now selling access to this admin subclaim for " + ChatColor.GREEN + price + " " + Main.econ.currencyNamePlural());
                     addLogEntry(
                             "[" + this.dateFormat.format(this.date) + "] " + player.getName() + " has made an admin subclaim access for sale at "
@@ -190,6 +193,7 @@ public class GPListener implements Listener {
                         event.setLine(1, ChatColor.DARK_GREEN + plugin.dataStore.cfgReplaceSell);
                         event.setLine(2, player.getName());
                         event.setLine(3, price + " " + Main.econ.currencyNamePlural());
+                        plugin.mySQL.createClaim(event.getBlock().getLocation(), event.getPlayer().getUniqueId());
                         player.sendMessage(plugin.dataStore.chatPrefix + ChatColor.BLUE + "You are now selling access to this subclaim for " + ChatColor.GREEN + price + " " + Main.econ.currencyNamePlural());
                         addLogEntry(
                                 "[" + this.dateFormat.format(this.date) + "] " + player.getName() + " has made a subclaim access for sale at "
@@ -200,24 +204,17 @@ public class GPListener implements Listener {
                                         + "Price: " + price + " " + Main.econ.currencyNamePlural());
                     }
                 } else {
-                    // The player does NOT have the correct permissions to sell subclaims
                     player.sendMessage(plugin.dataStore.chatPrefix + ChatColor.RED + "You do not have permission to sell subclaims!");
                     event.setCancelled(true);
                 }
             }
         }
     }
-    //TODO: - If something doesn't work it's because of this! We are using usernames instead of UIID's. Which may be removed at any time.
+
     @EventHandler
     public void onSignInteract(PlayerInteractEvent event) {
         if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
-            Material type = event.getClickedBlock().getType();
-            if ((type == Material.SPRUCE_SIGN) || (type == Material.SPRUCE_WALL_SIGN) || (type == Material.ACACIA_SIGN)
-                    || (type == Material.ACACIA_WALL_SIGN) || (type == Material.BIRCH_SIGN) || (type == Material.BIRCH_WALL_SIGN)
-                    || (type == Material.CRIMSON_SIGN) || (type == Material.CRIMSON_WALL_SIGN) || (type == Material.DARK_OAK_SIGN)
-                    || (type == Material.DARK_OAK_WALL_SIGN) || (type == Material.JUNGLE_SIGN) || (type == Material.JUNGLE_WALL_SIGN)
-                    || (type == Material.OAK_SIGN) || (type == Material.OAK_WALL_SIGN) || (type == Material.WARPED_SIGN)
-                    || (type == Material.WARPED_WALL_SIGN)) {
+            if (event.getClickedBlock().getState() instanceof Sign) {
                 Sign sign = (Sign) event.getClickedBlock().getState();
                 if ((sign.getLine(0).equalsIgnoreCase(ChatColor.BLUE + plugin.dataStore.cfgSignShort)) || (sign.getLine(0).equalsIgnoreCase(ChatColor.BLUE + plugin.dataStore.cfgSignLong))) {
                     Player player = event.getPlayer();
@@ -230,6 +227,7 @@ public class GPListener implements Listener {
                     if (claim == null) {
                         player.sendMessage(plugin.dataStore.chatPrefix + ChatColor.RED + "This sign is no longer within a claim!");
                         event.getClickedBlock().setType(Material.AIR);
+                        plugin.mySQL.deleteClaim(event.getClickedBlock().getLocation());
                         return;
                     }
                     if (event.getPlayer().isSneaking()) {
@@ -265,7 +263,7 @@ public class GPListener implements Listener {
                         if (claim.parent == null) {
                             if (Main.perms.has(player, "gprealestate.claim.buy")) {
                                 if ((claim.getArea() <= gp.dataStore.getPlayerData(player.getUniqueId()).getAccruedClaimBlocks()) || player.hasPermission("Main.ignore.limit")) {
-                                    if (makePayment(player, Bukkit.getOfflinePlayer(sign.getLine(2)), price)) {
+                                    if (makePayment(player, Bukkit.getOfflinePlayer(plugin.mySQL.getUUID(sign.getLine(2))), price)) {
                                         try {
                                             for (Claim child : claim.children) {
                                                 child.clearPermissions();
@@ -279,6 +277,7 @@ public class GPListener implements Listener {
                                         }
                                         if (claim.getOwnerName().equalsIgnoreCase(player.getName())) {
                                             player.sendMessage(plugin.dataStore.chatPrefix + ChatColor.BLUE + "You have successfully purchased this claim for " + ChatColor.GREEN + price + Main.econ.currencyNamePlural());
+                                            plugin.mySQL.deleteClaim(event.getClickedBlock().getLocation());
                                             addLogEntry(
                                                     "[" + this.dateFormat.format(this.date) + "] " + player.getName() + " Has purchased a claim at "
                                                             + "[" + player.getLocation().getWorld() + ", "
@@ -301,16 +300,17 @@ public class GPListener implements Listener {
                         } else {
                             if (status.equalsIgnoreCase(plugin.dataStore.cfgReplaceSell)) {
                                 if (Main.perms.has(player, "gprealestate.subclaim.buy")) {
-                                    if (makePayment(player, Bukkit.getOfflinePlayer(sign.getLine(2)), price)) {
+                                    if (makePayment(player, Bukkit.getOfflinePlayer(plugin.mySQL.getUUID(sign.getLine(2))), price)) {
                                         claim.clearPermissions();
                                         //This  is an admin subclaim
                                         if (claim.parent.isAdminClaim()) {
-                                            if (player != Bukkit.getOfflinePlayer(sign.getLine(2))) {
-                                                Main.econ.withdrawPlayer(Bukkit.getOfflinePlayer(sign.getLine(2)), price);
+                                            if (player != Bukkit.getOfflinePlayer(plugin.mySQL.getUUID(sign.getLine(2)))) {
+                                                Main.econ.withdrawPlayer(Bukkit.getOfflinePlayer(plugin.mySQL.getUUID(sign.getLine(2))), price);
                                                 claim.setPermission(player.getUniqueId().toString(), ClaimPermission.Build);
                                                 gp.dataStore.saveClaim(claim);
                                                 event.getClickedBlock().breakNaturally();
                                                 player.sendMessage(plugin.dataStore.chatPrefix + ChatColor.BLUE + "You have successfully purchased this admin subclaim for " + ChatColor.GREEN + price + Main.econ.currencyNamePlural());
+                                                plugin.mySQL.deleteClaim(event.getClickedBlock().getLocation());
                                                 addLogEntry(
                                                         "[" + this.dateFormat.format(this.date) + "] " + player.getName() + " Has purchased an admin subclaim at "
                                                                 + "[" + player.getLocation().getWorld() + ", "
@@ -330,6 +330,7 @@ public class GPListener implements Listener {
                                             gp.dataStore.saveClaim(claim);
                                             event.getClickedBlock().breakNaturally();
                                             player.sendMessage(plugin.dataStore.chatPrefix + ChatColor.BLUE + "You have successfully purchased this subclaim for " + ChatColor.GREEN + price + Main.econ.currencyNamePlural());
+                                            plugin.mySQL.deleteClaim(event.getClickedBlock().getLocation());
                                             addLogEntry(
                                                     "[" + this.dateFormat.format(this.date) + "] " + player.getName() + " Has purchased a subclaim at "
                                                             + "[" + player.getLocation().getWorld() + ", "
