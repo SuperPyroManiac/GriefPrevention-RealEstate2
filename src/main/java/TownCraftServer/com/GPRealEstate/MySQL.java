@@ -47,9 +47,9 @@ public class MySQL implements Listener {
 
     public void createTable(){
         try{
-            PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS userdata " + "(USERNAME VARCHAR(16), UUID VARCHAR(62),PRIMARY KEY (USERNAME))");
+            PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS gpre_userdata " + "(USERNAME VARCHAR(16), UUID VARCHAR(62),PRIMARY KEY (USERNAME))");
             ps.executeUpdate();
-            PreparedStatement pss = plugin.dataStore.getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS claimdata " + "(LOCATION VARCHAR(50), UUID VARCHAR(62),PRIMARY KEY (LOCATION))");
+            PreparedStatement pss = plugin.dataStore.getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS gpre_claimdata " + "(LOCATION VARCHAR(50), UUID VARCHAR(62),PRIMARY KEY (LOCATION))");
             pss.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -61,7 +61,7 @@ public class MySQL implements Listener {
             String name = player.getName();
             UUID uuid = player.getUniqueId();
             if (!exists(uuid)){
-                PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("INSERT IGNORE INTO userdata" + " (USERNAME,UUID) VALUES (?,?)");
+                PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("INSERT IGNORE INTO gpre_userdata" + " (USERNAME,UUID) VALUES (?,?)");
                 ps.setString(1, name);
                 ps.setString(2, uuid.toString());
                 ps.executeUpdate();
@@ -74,7 +74,7 @@ public class MySQL implements Listener {
     public void createClaim(Location location, UUID uuid){
         try{
             //if (!existsClaim(location)) {
-                PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("INSERT IGNORE INTO claimdata" + " (LOCATION,UUID) VALUES (?,?)");
+                PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("INSERT IGNORE INTO gpre_claimdata" + " (LOCATION,UUID) VALUES (?,?)");
                 ps.setString(1, getStringLocation(location));
                 ps.setString(2, uuid.toString());
                 ps.executeUpdate();
@@ -86,7 +86,7 @@ public class MySQL implements Listener {
 
     public boolean exists(UUID uuid){
         try{
-            PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("SELECT * FROM userdata WHERE UUID=?");
+            PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("SELECT * FROM gpre_userdata WHERE UUID=?");
             ps.setString(1, uuid.toString());
             ResultSet resultSet = ps.executeQuery();
             return resultSet.next();
@@ -98,7 +98,7 @@ public class MySQL implements Listener {
 
     public boolean existsClaim(Location location){
         try{
-            PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("SELECT * FROM claimdata WHERE LOCATION=?");
+            PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("SELECT * FROM gpre_claimdata WHERE LOCATION=?");
             ps.setString(1, getStringLocation(location));
             ResultSet resultSet = ps.executeQuery();
             return resultSet.next();
@@ -111,7 +111,7 @@ public class MySQL implements Listener {
     public void deleteClaim(Location location){
         try{
             if(existsClaim(location)) {
-                PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("DELETE FROM claimdata WHERE LOCATION=?");
+                PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("DELETE FROM gpre_claimdata WHERE LOCATION=?");
                 ps.setString(1, getStringLocation(location));
                 ps.executeUpdate();
             }
@@ -122,7 +122,7 @@ public class MySQL implements Listener {
 
     public String getUsername(UUID uuid){
         try{
-            PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("SELECT USERNAME FROM userdata WHERE UUID=?");
+            PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("SELECT USERNAME FROM gpre_userdata WHERE UUID=?");
             ps.setString(1, uuid.toString());
             ResultSet resultSet = ps.executeQuery();
             if (resultSet.next()){
@@ -136,7 +136,7 @@ public class MySQL implements Listener {
 
     public UUID getUUID(String name){
         try{
-            PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("SELECT UUID FROM userdata WHERE USERNAME=?");
+            PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("SELECT UUID FROM gpre_userdata WHERE USERNAME=?");
             ps.setString(1, name);
             ResultSet resultSet = ps.executeQuery();
             if (resultSet.next()){
@@ -152,7 +152,7 @@ public class MySQL implements Listener {
         try{
             String name = player.getName();
             UUID uuid = player.getUniqueId();
-            PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("UPDATE userdata SET USERNAME=? WHERE UUID=?");
+            PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("UPDATE gpre_userdata SET USERNAME=? WHERE UUID=?");
             ps.setString(1, name);
             ps.setString(2, uuid.toString());
             ps.executeUpdate();
@@ -165,7 +165,7 @@ public class MySQL implements Listener {
         try{
             String name = player.getName();
             UUID uuid = player.getUniqueId();
-            PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("SELECT LOCATION FROM claimdata WHERE UUID=?");
+            PreparedStatement ps = plugin.dataStore.getConnection().prepareStatement("SELECT LOCATION FROM gpre_claimdata WHERE UUID=?");
             ps.setString(1, uuid.toString());
             ResultSet resultSet = ps.executeQuery();
             while (resultSet.next()){
